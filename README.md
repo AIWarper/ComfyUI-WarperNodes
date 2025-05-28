@@ -5,6 +5,7 @@ A collection of general-purpose nodes for ComfyUI.
 ## Current Nodes
 
 *   **DWPose Scaler (Warper):** Provides advanced scaling and adjustment options for DWPose keypoints. (Category: `Warper Tools`)
+    ![DWPose Scaler Example Image](assets/images/DWScaler.jpg)
 
 ## Installation
 
