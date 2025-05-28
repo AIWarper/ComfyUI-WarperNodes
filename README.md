@@ -11,7 +11,7 @@ A collection of general-purpose nodes for ComfyUI.
 1.  Navigate to your ComfyUI `custom_nodes` directory.
 2.  Clone this repository:
     ```bash
-    git clone https://github.com/AIWarper/WarperNodes
+    git clone https://github.com/AIWarper/ComfyUI-WarperNodes.git
     ```
 3.  Install any dependencies (if listed in `requirements.txt`):
     ```bash
