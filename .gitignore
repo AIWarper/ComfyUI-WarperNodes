@@ -1,0 +1,20 @@
+# Python 
+__pycache__/ 
+*.py[cod] 
+*$py.class 
+ 
+# Virtual environment 
+venv/ 
+env/ 
+.*-env/ 
+pip-selfcheck.json 
+ 
+# IDE / Editor specific 
+.vscode/ 
+.idea/ 
+*.swp 
+*~ 
+ 
+# OS specific 
+.DS_Store 
+Thumbs.db 
