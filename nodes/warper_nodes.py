@@ -499,6 +499,7 @@ class FacialPartMaskFromPose_Warper:
         return {
             "required": {
                 "pose_keypoints": ("POSE_KEYPOINT",),
+                "mask_entire_face": ("BOOLEAN", {"default": False}),
                 "mask_mouth": ("BOOLEAN", {"default": True}),
                 "mask_left_eye": ("BOOLEAN", {"default": False}),
                 "mask_right_eye": ("BOOLEAN", {"default": False}),
@@ -531,7 +532,7 @@ class FacialPartMaskFromPose_Warper:
                 cv2.circle(mask, (int(x), int(y)), int(radius), 255, -1)
         return mask
 
-    def create_facial_part_mask(self, pose_keypoints, mask_mouth, mask_left_eye, mask_right_eye, mask_shape, expand_mask, person_index):
+    def create_facial_part_mask(self, pose_keypoints, mask_entire_face, mask_mouth, mask_left_eye, mask_right_eye, mask_shape, expand_mask, person_index):
         if not pose_keypoints or not isinstance(pose_keypoints, list):
             print("Warper Facial Part Mask: Invalid or empty pose_keypoints input. Returning black mask.")
             return (torch.zeros((1, 1, 1), dtype=torch.float32),)
@@ -540,12 +541,8 @@ class FacialPartMaskFromPose_Warper:
             "Mouth": slice(48, 68),
             "Left Eye": slice(36, 42),
             "Right Eye": slice(42, 48),
+            "Entire Face": slice(0, 27) # Jawline + Eyebrows
         }
-
-        parts_to_mask = []
-        if mask_mouth: parts_to_mask.append("Mouth")
-        if mask_left_eye: parts_to_mask.append("Left Eye")
-        if mask_right_eye: parts_to_mask.append("Right Eye")
 
         batch_masks = []
         for frame_data in pose_keypoints:
@@ -556,7 +553,6 @@ class FacialPartMaskFromPose_Warper:
             height = frame_data.get("canvas_height", 512)
             width = frame_data.get("canvas_width", 512)
             
-            # Create a single mask that we will draw all selected parts onto
             combined_mask = np.zeros((height, width), dtype=np.uint8)
 
             people = frame_data.get("people", [])
@@ -567,18 +563,26 @@ class FacialPartMaskFromPose_Warper:
                 if face_keypoints_flat:
                     face_keypoints = np.array(face_keypoints_flat).reshape(-1, 3)
                     
-                    # Iterate through the parts selected by the user
-                    for part_name in parts_to_mask:
-                        # Get points for the current part
-                        part_points_slice = PART_INDICES[part_name]
-                        part_points = face_keypoints[part_points_slice]
-                        
-                        # Filter for confidence and get coordinates
-                        valid_part_points_coords = part_points[part_points[:, 2] > 0.01][:, :2].astype(np.int32)
-                        
-                        # Draw the shape for this part onto the combined mask
-                        if valid_part_points_coords.shape[0] > 0:
-                            combined_mask = self._draw_shape_on_mask(combined_mask, valid_part_points_coords, mask_shape)
+                    if mask_entire_face:
+                        # If masking the whole face, do this and ignore individual parts
+                        part_slice = PART_INDICES["Entire Face"]
+                        part_points = face_keypoints[part_slice]
+                        valid_points = part_points[part_points[:, 2] > 0.01][:, :2].astype(np.int32)
+                        if valid_points.shape[0] > 0:
+                            combined_mask = self._draw_shape_on_mask(combined_mask, valid_points, mask_shape)
+                    else:
+                        # Otherwise, process individual parts
+                        parts_to_mask = []
+                        if mask_mouth: parts_to_mask.append("Mouth")
+                        if mask_left_eye: parts_to_mask.append("Left Eye")
+                        if mask_right_eye: parts_to_mask.append("Right Eye")
+
+                        for part_name in parts_to_mask:
+                            part_slice = PART_INDICES[part_name]
+                            part_points = face_keypoints[part_slice]
+                            valid_points = part_points[part_points[:, 2] > 0.01][:, :2].astype(np.int32)
+                            if valid_points.shape[0] > 0:
+                                combined_mask = self._draw_shape_on_mask(combined_mask, valid_points, mask_shape)
 
             # Expand or contract the final combined mask
             if expand_mask != 0:

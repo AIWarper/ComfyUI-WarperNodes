@@ -1,193 +1,129 @@
 # aiwarper-comfyui-warpernodes/nodes/wan_video_batching_nodes.py
 
 import torch
-import numpy as np
 
-# ADD THESE TWO NEW CLASSES TO THE wan_video_batching_nodes.py FILE
-
-class ToAny:
-    """Converts any input to a generic ANY type to break frontend loop detection."""
-    @classmethod
-    def INPUT_TYPES(s):
-        return {"required": {"data": ("*",)}}
-    RETURN_TYPES = ("*",)
-    FUNCTION = "convert"
-    CATEGORY = "WarperNodes/WanVideoBatching/_Utils"
-
-    def convert(self, data):
-        return (data,)
-
-class FromAny:
-    """Converts a generic ANY type back to a specified primitive type."""
+class SmartVideoBatcher:
+    """
+    A node that takes a batch of images (frames) and splits them into smaller,
+    user-defined batches. It applies special padding to the final batch to ensure
+    its length satisfies the formula (n-1) % 4 == 0.
+    """
+    
     @classmethod
     def INPUT_TYPES(s):
         return {
             "required": {
-                "data": ("*",),
-                "target_type": (["LOOP_CONTEXT", "IMAGE", "INT"],), # Add other types if needed
+                "image": ("IMAGE",),
+                "batch_length": ("INT", {
+                    "default": 81,
+                    "min": 1,
+                    "max": 8192,
+                    "step": 1
+                }),
             }
         }
-    RETURN_TYPES = ("*",)
-    FUNCTION = "convert"
-    CATEGORY = "WarperNodes/WanVideoBatching/_Utils"
 
-    def convert(self, data, target_type):
-        # This node is mostly for the frontend; the backend just passes the data through.
-        # The RETURN_TYPES being '*' lets it connect to anything.
-        # We manually set the output type in the node definition to guide the user.
-        self.RETURN_TYPES = (target_type,)
-        return (data,)
+    RETURN_TYPES = ("IMAGE_BATCHES",)
+    RETURN_NAMES = ("image_batches",)
+    FUNCTION = "batch_images"
+    CATEGORY = "AIWarper/Looping"
 
-class SmartVideoBatcher:
-    @classmethod
-    def INPUT_TYPES(s):
-        return { "required": {
-                "preprocessed_video_frames": ("IMAGE",),
-                "batch_length": ("INT", {"default": 81, "min": 5, "max": 512, "step": 1}),
-            }}
-    RETURN_TYPES = ("CONTROL_FRAMES_LIST",)
-    RETURN_NAMES = ("control_frames_list",)
-    FUNCTION = "batch_video"
-    CATEGORY = "WarperNodes/WanVideoBatching"
-    def batch_video(self, preprocessed_video_frames, batch_length):
-        if preprocessed_video_frames is None or preprocessed_video_frames.ndim != 4 or preprocessed_video_frames.shape[0] == 0:
+    def batch_images(self, image: torch.Tensor, batch_length: int):
+        total_frames = image.shape[0]
+        
+        print(f"[SmartVideoBatcher] Received {total_frames} frames with a desired batch length of {batch_length}.")
+
+        if total_frames == 0:
+            print("[SmartVideoBatcher] Warning: Input contains 0 frames. Returning empty list.")
             return ([],)
-        num_total_frames = preprocessed_video_frames.shape[0]
-        L_ctrl = batch_length - 1
-        if L_ctrl <= 0: raise ValueError(f"batch_length ({batch_length}) must be > 1.")
-        control_frames_list = []
-        current_idx = 0
-        while current_idx < num_total_frames:
-            remaining_frames = num_total_frames - current_idx
-            if remaining_frames >= L_ctrl:
-                segment = preprocessed_video_frames[current_idx : current_idx + L_ctrl]
-                control_frames_list.append(segment)
-                current_idx += L_ctrl
+
+        if batch_length <= 0:
+            print(f"[SmartVideoBatcher] Warning: batch_length ({batch_length}) is not positive. Returning the original batch as a single item list.")
+            return ([image],)
+
+        batches = []
+        
+        num_full_batches = total_frames // batch_length
+        for i in range(num_full_batches):
+            start_index = i * batch_length
+            end_index = start_index + batch_length
+            batch = image[start_index:end_index]
+            batches.append(batch)
+        
+        print(f"[SmartVideoBatcher] Created {len(batches)} full-sized batch(es).")
+
+        remaining_frames_count = total_frames % batch_length
+        if remaining_frames_count > 0:
+            start_of_remainder = num_full_batches * batch_length
+            remaining_batch = image[start_of_remainder:]
+            
+            print(f"[SmartVideoBatcher] Handling remaining {remaining_frames_count} frames.")
+
+            last_frame_to_duplicate = remaining_batch[-1].unsqueeze(0)
+            current_length = remaining_frames_count
+            target_length = current_length
+            
+            while (target_length - 1) % 4 != 0:
+                target_length += 1
+            
+            num_to_pad = target_length - current_length
+
+            if num_to_pad > 0:
+                print(f"[SmartVideoBatcher] Padding last batch from {current_length} to {target_length} frames (adding {num_to_pad} duplicates of the last frame).")
+                padding = last_frame_to_duplicate.repeat(num_to_pad, 1, 1, 1)
+                padded_batch = torch.cat([remaining_batch, padding], dim=0)
+                batches.append(padded_batch)
             else:
-                remainder_segment = preprocessed_video_frames[current_idx:]
-                current_model_input_len = 1 + remainder_segment.shape[0]
-                padded_segment = remainder_segment
-                while (current_model_input_len - 1) % 4 != 0:
-                    if padded_segment.shape[0] == 0: break
-                    padded_segment = torch.cat((padded_segment, padded_segment[-1].unsqueeze(0)), dim=0)
-                    current_model_input_len += 1
-                control_frames_list.append(padded_segment)
-                break
-        print(f"SmartVideoBatcher: Prepared {len(control_frames_list)} pre-processed control frame segments.")
-        return (control_frames_list,)
+                print(f"[SmartVideoBatcher] No padding needed for the last batch of {current_length} frames.")
+                batches.append(remaining_batch)
+        
+        total_output_frames = sum(b.shape[0] for b in batches)
+        print(f"[SmartVideoBatcher] Finished. Outputting {len(batches)} batches with a total of {total_output_frames} frames.")
+        
+        return (batches,)
 
+# +++ NEW NODE ADDED BELOW +++
 
-class IterativeLoopSetup:
+class GetBatchByIndex:
     """
-    Initializes an iterative loop. Takes the full list of control frames and the
-    user's initial start frame, and outputs the data for the first iteration, including
-    an empty tensor to begin the stitched_frames accumulation.
+    Selects a single batch of images from a list of batches using an index.
     """
     @classmethod
     def INPUT_TYPES(s):
-        return { "required": {
-                "control_frames_list": ("CONTROL_FRAMES_LIST",),
-                "first_start_frame": ("IMAGE",),
-            }}
-    # ADDED a new output: initial_stitched_frames
-    RETURN_TYPES = ("IMAGE", "IMAGE", "LOOP_CONTEXT", "IMAGE") 
-    RETURN_NAMES = ("initial_start_frame", "initial_control_frames", "loop_context", "initial_stitched_frames")
-    FUNCTION = "setup_loop"
-    CATEGORY = "WarperNodes/WanVideoBatching"
-
-    def setup_loop(self, control_frames_list, first_start_frame):
-        # Get the shape from the start frame to create a correctly dimensioned empty tensor
-        B, H, W, C = first_start_frame.shape
-        # This creates an image batch with 0 frames, which is the correct starting point for our accumulator
-        initial_stitched_frames = torch.empty((0, H, W, C), dtype=first_start_frame.dtype, device="cpu")
-
-        if not control_frames_list:
-            print("IterativeLoopSetup: Warning - Empty control_frames_list. Loop will not run.")
-            return (first_start_frame, torch.empty((0, H, W, C)), {"remaining_segments": [], "index": 0, "total": 0}, initial_stitched_frames)
-
-        first_control_segment = control_frames_list[0]
-        remaining_segments = control_frames_list[1:]
-        
-        loop_context = {
-            "remaining_segments": remaining_segments,
-            "index": 0,
-            "total": len(control_frames_list)
-        }
-        
-        return (first_start_frame, first_control_segment, loop_context, initial_stitched_frames)
-
-
-class ConditionalLoopInputSwitch:
-    @classmethod
-    def INPUT_TYPES(s):
-        return { "required": {
-                "iteration_index": ("INT", {"forceInput": True}),
-                "initial_input": ("*",), 
-                "feedback_input": ("*",),
-            }}
-    RETURN_TYPES = ("*",)
-    FUNCTION = "switch_input"
-    CATEGORY = "WarperNodes/WanVideoBatching/_Utils"
-    def switch_input(self, iteration_index, initial_input, feedback_input):
-        if iteration_index == 0:
-            print(f"ConditionalSwitch: Iteration 0, passing initial_input.")
-            return (initial_input,)
-        else:
-            print(f"ConditionalSwitch: Iteration {iteration_index}, passing feedback_input.")
-            return (feedback_input,)
-
-
-class IterativeLoopFeedback:
-    # THIS IS THE CRUCIAL FIX.
-    # This tells the ComfyUI frontend that this node is a "terminal" node
-    # for the purpose of loop detection, preventing the "not submitting workflow" error.
-    OUTPUT_NODE = True 
-    
-    @classmethod
-    def INPUT_TYPES(s):
-        return { "required": {
-                "loop_context": ("LOOP_CONTEXT",),
-                "processed_frames": ("IMAGE",),
-            },
-            "optional": {
-                "stitched_frames_feedback": ("IMAGE",)
+        return {
+            "required": {
+                "image_batches": ("IMAGE_BATCHES",),
+                "index": ("INT", {"default": 0, "min": 0, "step": 1}),
             }
         }
-        
-    RETURN_TYPES = ("IMAGE", "IMAGE", "LOOP_CONTEXT", "IMAGE", "INT")
-    RETURN_NAMES = ("next_start_frame", "next_control_frames", "loop_context_out", "stitched_frames", "iteration_index")
-    FUNCTION = "feedback_loop"
-    CATEGORY = "WarperNodes/WanVideoBatching"
 
-    def feedback_loop(self, loop_context, processed_frames, stitched_frames_feedback=None):
-        current_index = loop_context.get("index", 0)
-        total_iterations = loop_context.get("total", 0)
-        remaining_segments = loop_context.get("remaining_segments", [])
+    RETURN_TYPES = ("IMAGE",)
+    FUNCTION = "get_batch"
+    CATEGORY = "AIWarper/Looping"
 
-        if stitched_frames_feedback is None:
-            current_stitched_frames = processed_frames
-        else:
-            frames_to_add = processed_frames[1:] if processed_frames.shape[0] > 1 else processed_frames
-            if frames_to_add.shape[0] > 0:
-                 current_stitched_frames = torch.cat((stitched_frames_feedback, frames_to_add), dim=0)
-            else:
-                 current_stitched_frames = stitched_frames_feedback
+    def get_batch(self, image_batches: list, index: int):
+        # Check if the list of batches is empty
+        if not image_batches:
+            print("[GetBatchByIndex] Warning: Input 'image_batches' is empty. Returning an empty tensor.")
+            # Return an empty tensor with the correct number of dimensions but zero size.
+            # This avoids errors in downstream nodes expecting a 4D tensor.
+            return (torch.empty(0, 1, 1, 3, dtype=torch.float32, device='cpu'),)
 
-        if not remaining_segments:
-            print(f"IterativeLoopFeedback: Loop finished after {total_iterations} iterations.")
-            empty_image = torch.empty((0,1,1,3))
-            # Return empty data for the loop feedback outputs to terminate the loop
-            return (empty_image, empty_image, {"remaining_segments": [], "index": -1, "total": total_iterations}, current_stitched_frames, current_index)
+        # Check if the index is valid
+        if index >= len(image_batches):
+            print(f"[GetBatchByIndex] Error: Index {index} is out of bounds. The list has {len(image_batches)} batches. Returning the last available batch.")
+            # Return the last batch to prevent crashing the workflow
+            return (image_batches[-1],)
         
-        next_control_frames = remaining_segments[0]
-        next_remaining_segments = remaining_segments[1:]
-        next_start_frame = processed_frames[-1].unsqueeze(0)
-        
-        next_loop_context = {
-            "remaining_segments": next_remaining_segments,
-            "index": current_index + 1,
-            "total": total_iterations
-        }
-        
-        print(f"IterativeLoopFeedback: Completed iteration {current_index + 1}/{total_iterations}. Preparing for next.")
-        return (next_start_frame, next_control_frames, next_loop_context, current_stitched_frames, current_index)
+        print(f"[GetBatchByIndex] Selecting batch at index {index}.")
+        return (image_batches[index],)
+
+
+# In the future, other looping nodes will be added here.
+# For example:
+# class IterativeLoopSetup:
+#     pass
+# class ConditionalLoopInputSwitch:
+#     pass
+# class IterativeLoopFeedback:
+#     pass
