@@ -16,19 +16,17 @@ A collection of general-purpose nodes for ComfyUI.
 
 *   **Smart Overlapping Batcher (Warper):** Creates overlapping batches from an image sequence to help maintain temporal consistency. (Category: `Warper Tools/Looping`)
 
-*   **Mouth Mask from Pose (Warper):** Generates a circular mask around the mouth area based on facial keypoints. (Category: `Warper Tools`)
+*   **Mouth Mask from Pose (Warper):** Generates a circular mask around the mouth area based on facial keypoints. (Category: `Warper Tools/DWMasking`)
 
-*   **Facial Part Mask from Pose (Warper):** Creates masks for various facial parts (entire face, mouth, eyes) using different shapes (convex hull, ellipse, etc.) based on facial keypoints. (Category: `Warper Tools`)
+*   **Facial Part Mask from Pose (Warper):** Creates masks for various facial parts (entire face, mouth, eyes) using different shapes (convex hull, ellipse, etc.) based on facial keypoints. (Category: `Warper Tools/DWMasking`)
 
 ## Installation
 
 1.  Navigate to your ComfyUI `custom_nodes` directory.
 2.  Clone this repository:
     ```bash
-    git clone https://github.com/AIWarper/ComfyUI-WarperNodes.git ComfyUI-WarperNodes
+    git clone https://github.com/AIWarper/ComfyUI-WarperNodes
     ```
-    *(Note: Added `ComfyUI-WarperNodes` to the clone command to ensure the directory is named consistently, as your `requirements.txt` path below implies this name.)*
-
 3.  **Install RAFT Model (Required for Flow Visualizer Node):**
     *   Download the RAFT model checkpoint: `Tartan-C-T-TSKH-spring540x960-M.pth`
         *   **Download Link:** [Google Drive Folder](https://drive.google.com/drive/folders/1YLovlvUW94vciWvTyLf-p3uWscbOQRWW) (Look for the specified `.pth` file within this folder.)
