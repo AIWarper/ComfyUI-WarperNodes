@@ -26,7 +26,7 @@ class SmartVideoBatcher:
     RETURN_TYPES = ("IMAGE_BATCHES",)
     RETURN_NAMES = ("image_batches",)
     FUNCTION = "batch_images"
-    CATEGORY = "AIWarper/Looping"
+    CATEGORY = "Warper Tools/Looping"
 
     def batch_images(self, image: torch.Tensor, batch_length: int):
         total_frames = image.shape[0]
@@ -99,7 +99,7 @@ class GetBatchByIndex:
 
     RETURN_TYPES = ("IMAGE",)
     FUNCTION = "get_batch"
-    CATEGORY = "AIWarper/Looping"
+    CATEGORY = "Warper Tools/Looping"
 
     def get_batch(self, image_batches: list, index: int):
         # Check if the list of batches is empty
@@ -148,7 +148,7 @@ class SmartOverlappingBatcher:
     RETURN_TYPES = ("IMAGE_BATCHES",)
     RETURN_NAMES = ("image_batches",)
     FUNCTION = "batch_images_with_overlap"
-    CATEGORY = "AIWarper/Looping"
+    CATEGORY = "Warper Tools/Looping"
 
     def batch_images_with_overlap(self, image: torch.Tensor, batch_size: int, overlap_size: int):
         total_frames = image.shape[0]

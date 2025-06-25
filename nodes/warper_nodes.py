@@ -151,7 +151,7 @@ class DWPoseScalerNode_Warper:
     RETURN_TYPES = ("IMAGE", "POSE_KEYPOINT")
     RETURN_NAMES = ("scaled_image", "scaled_pose_keypoints")
     FUNCTION = "scale_pose"
-    CATEGORY = "Warper Tools"
+    CATEGORY = "Warper Tools/DWMasking"
 
     def _get_original_measurements(self, ref_person_data, canvas_width, canvas_height):
         measurements = {}
@@ -452,7 +452,7 @@ class MouthMaskFromPose_Warper:
         }
     RETURN_TYPES = ("MASK",)
     FUNCTION = "create_mouth_mask"
-    CATEGORY = "Warper Tools"
+    CATEGORY = "Warper Tools/DWMasking"
 
     def create_mouth_mask(self, pose_keypoints, mask_radius, person_index):
         if not pose_keypoints or not isinstance(pose_keypoints, list):
@@ -510,7 +510,7 @@ class FacialPartMaskFromPose_Warper:
         }
     RETURN_TYPES = ("MASK",)
     FUNCTION = "create_facial_part_mask"
-    CATEGORY = "Warper Tools"
+    CATEGORY = "Warper Tools/DWMasking"
 
     def _draw_shape_on_mask(self, mask, points, shape):
         if points.shape[0] > 2: # Need at least 3 points for a shape

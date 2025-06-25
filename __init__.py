@@ -1,13 +1,10 @@
 # aiwarper-comfyui-warpernodes/__init__.py
+from .nodes.wan_flow_nodes import FlowVisualizerNode_Warper # Removed FlowGetFlowNode, GetRaftFlowNode, FlowConfigNode
 from .nodes.warper_nodes import (DWPoseScalerNode_Warper, MouthMaskFromPose_Warper, FacialPartMaskFromPose_Warper)
 from .nodes.wan_video_batching_nodes import (
     SmartVideoBatcher,
     GetBatchByIndex,
-    SmartOverlappingBatcher, # <-- Added the new overlapping batcher
-    # The following are placeholders for future nodes
-    # IterativeLoopSetup,
-    # ConditionalLoopInputSwitch,
-    # IterativeLoopFeedback
+    SmartOverlappingBatcher,
 )
 
 NODE_CLASS_MAPPINGS = {
@@ -18,10 +15,13 @@ NODE_CLASS_MAPPINGS = {
     # Visual Looping Nodes
     "SmartVideoBatcher_Warper": SmartVideoBatcher,
     "GetBatchByIndex_Warper": GetBatchByIndex,
-    "SmartOverlappingBatcher_Warper": SmartOverlappingBatcher, # <-- Registered the new node class
-    # "IterativeLoopSetup_Warper": IterativeLoopSetup,
-    # "ConditionalLoopInputSwitch_Warper": ConditionalLoopInputSwitch,
-    # "IterativeLoopFeedback_Warper": IterativeLoopFeedback,
+    "SmartOverlappingBatcher_Warper": SmartOverlappingBatcher,
+    # MAPPINGS FOR FLOW NODES (Advanced) - REMOVED
+    # "FlowGetFlow_Warper": FlowGetFlowNode, # Removed
+    # "GetRaftFlow_Warper": GetRaftFlowNode, # Removed
+    # "FlowConfig_Warper": FlowConfigNode,   # Removed
+    # MAPPING FOR SIMPLIFIED FLOW NODE
+    "FlowVisualizerNode_Warper": FlowVisualizerNode_Warper,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -32,10 +32,13 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     # Visual Looping Nodes
     "SmartVideoBatcher_Warper": "Smart Video Batcher (Warper)",
     "GetBatchByIndex_Warper": "Get Batch By Index (Warper)",
-    "SmartOverlappingBatcher_Warper": "Smart Overlapping Batcher (Warper)", # <-- Added the display name
-    # "IterativeLoopSetup_Warper": "Iterative Loop Setup (Warper)",
-    # "ConditionalLoopInputSwitch_Warper": "Conditional Loop Input Switch (Warper)",
-    # "IterativeLoopFeedback_Warper": "Iterative Loop Feedback (Warper)",
+    "SmartOverlappingBatcher_Warper": "Smart Overlapping Batcher (Warper)",
+    # DISPLAY NAMES FOR FLOW NODES (Advanced) - REMOVED
+    # "FlowGetFlow_Warper": "Get UniMatch Flow (Warper)", # Removed
+    # "GetRaftFlow_Warper": "Get RAFT Flow (Warper)",   # Removed
+    # "FlowConfig_Warper": "Flow Config (Warper)",     # Removed
+    # DISPLAY NAME FOR SIMPLIFIED FLOW NODE
+    "FlowVisualizerNode_Warper": "Flow Visualizer (Warper)",
 }
 
 __all__ = ['NODE_CLASS_MAPPINGS', 'NODE_DISPLAY_NAME_MAPPINGS']
