@@ -51,6 +51,6 @@ A collection of general-purpose nodes for ComfyUI.
 
 ---
 
-**TODO (Example - you can remove this section):**
+**TODO:**
 *   Add example images/gifs for other nodes.
 *   More detailed usage instructions for each node.
