@@ -6,6 +6,7 @@ from .nodes.wan_video_batching_nodes import (
     GetBatchByIndex,
     SmartOverlappingBatcher,
 )
+from .nodes.image_resolution_nodes import (PreprocessForTarget, CropAndRestore)
 
 NODE_CLASS_MAPPINGS = {
     # DWPose Nodes
@@ -22,6 +23,9 @@ NODE_CLASS_MAPPINGS = {
     # "FlowConfig_Warper": FlowConfigNode,   # Removed
     # MAPPING FOR SIMPLIFIED FLOW NODE
     "FlowVisualizerNode_Warper": FlowVisualizerNode_Warper,
+    # Image Resolution Nodes
+    "PreprocessForTarget_Warper": PreprocessForTarget,
+    "CropAndRestore_Warper": CropAndRestore,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -39,6 +43,9 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     # "FlowConfig_Warper": "Flow Config (Warper)",     # Removed
     # DISPLAY NAME FOR SIMPLIFIED FLOW NODE
     "FlowVisualizerNode_Warper": "Flow Visualizer (Warper)",
+    # Image Resolution Nodes
+    "PreprocessForTarget_Warper": "Preprocess for Target (Warper)",
+    "CropAndRestore_Warper": "Crop and Restore (Warper)",
 }
 
 __all__ = ['NODE_CLASS_MAPPINGS', 'NODE_DISPLAY_NAME_MAPPINGS']

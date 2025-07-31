@@ -1,0 +1,15 @@
+{
+  "workflow_name": "Resolution Preprocessing Example",
+  "description": "Example workflow showing how to use PreprocessForTarget and CropAndRestore nodes",
+  "usage": [
+    "1. Load any image",
+    "2. PreprocessForTarget will resize and pad with mirrored edges to match the closest Kontext resolution",
+    "3. Process through your model (VAE Encode -> KSampler -> VAE Decode)",
+    "4. CropAndRestore will remove padding and restore original dimensions",
+    "Note: The preprocess_data output MUST be connected from PreprocessForTarget to CropAndRestore"
+  ],
+  "node_connections": [
+    "LoadImage -> PreprocessForTarget_Warper -> VAEEncode -> KSampler -> VAEDecode -> CropAndRestore_Warper -> SaveImage",
+    "PreprocessForTarget_Warper.preprocess_data -> CropAndRestore_Warper.preprocess_data"
+  ]
+}

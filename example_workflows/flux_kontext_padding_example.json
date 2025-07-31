@@ -1,0 +1,15 @@
+{
+  "workflow_name": "Flux Kontext Padding Example",
+  "description": "Example workflow showing how to use PadForKontext and UnpadFromKontext nodes with Flux Kontext model",
+  "usage": [
+    "1. Load any image",
+    "2. PadForKontext will resize and pad with mirrored edges to match the closest Kontext resolution",
+    "3. Process through Flux Kontext model (VAE Encode -> KSampler -> VAE Decode)",
+    "4. UnpadFromKontext will remove padding and restore original dimensions",
+    "Note: The preprocess_data output MUST be connected from PadForKontext to UnpadFromKontext"
+  ],
+  "node_connections": [
+    "LoadImage -> PadForKontext_Warper -> VAEEncode -> KSampler -> VAEDecode -> UnpadFromKontext_Warper -> SaveImage",
+    "PadForKontext_Warper.preprocess_data -> UnpadFromKontext_Warper.preprocess_data"
+  ]
+}
