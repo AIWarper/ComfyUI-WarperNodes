@@ -30,7 +30,9 @@ PREFERED_KONTEXT_RESOLUTIONS = [
 class PreprocessForTarget:
     """
     Preprocesses an image by resizing and padding it to fit the best-matching target resolution.
-    Uses mirrored edges for padding to maintain visual continuity.
+    Supports two padding types:
+    - Mirror: Uses mirrored edges for padding to maintain visual continuity
+    - Colored: Uses solid color padding (black, grey, or white)
     Outputs both the processed image and the data needed to reverse this process.
     """
     
@@ -46,7 +48,8 @@ class PreprocessForTarget:
                     "multiline": True, 
                     "default": default_resolutions
                 }),
-
+                "padding_type": (["mirror", "colored"], {"default": "mirror"}),
+                "padding_color": (["black", "grey", "white"], {"default": "black"}),
             }
         }
     
@@ -129,7 +132,30 @@ class PreprocessForTarget:
         
         return padded_image, pad_left, pad_top
     
-    def preprocess(self, image, target_resolutions):
+    def create_colored_padding(self, image, target_width, target_height, color):
+        """Create a padded image using solid color padding."""
+        img_width, img_height = image.size
+        
+        # Calculate padding needed
+        pad_left = (target_width - img_width) // 2
+        pad_top = (target_height - img_height) // 2
+        
+        # Define color values
+        color_values = {
+            "black": (0, 0, 0),
+            "grey": (128, 128, 128),
+            "white": (255, 255, 255)
+        }
+        
+        # Create new image with solid color background
+        padded_image = Image.new('RGB', (target_width, target_height), color_values[color])
+        
+        # Paste the original image in the center
+        padded_image.paste(image, (pad_left, pad_top))
+        
+        return padded_image, pad_left, pad_top
+    
+    def preprocess(self, image, target_resolutions, padding_type, padding_color):
         # Convert from ComfyUI tensor to PIL Image
         # ComfyUI images are [batch, height, width, channels] with values 0-1
         image_np = image[0].cpu().numpy()  # Get first image in batch
@@ -159,8 +185,11 @@ class PreprocessForTarget:
         # Resize image using Lanczos resampling
         resized_image = pil_image.resize((w_new, h_new), Image.Resampling.LANCZOS)
         
-        # Create padded image with mirrored edges
-        padded_image, paste_x, paste_y = self.create_mirrored_padding(resized_image, w_target, h_target)
+        # Create padded image based on padding type
+        if padding_type == "mirror":
+            padded_image, paste_x, paste_y = self.create_mirrored_padding(resized_image, w_target, h_target)
+        else:  # colored
+            padded_image, paste_x, paste_y = self.create_colored_padding(resized_image, w_target, h_target, padding_color)
         
         # Convert back to ComfyUI tensor format
         padded_np = np.array(padded_image).astype(np.float32) / 255.0
