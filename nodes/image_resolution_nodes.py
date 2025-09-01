@@ -250,13 +250,87 @@ class CropAndRestore:
         return (restored_tensor,)
 
 
+class AspectRatioResolution:
+    """
+    Calculates width and height based on a selected aspect ratio and desired long edge resolution.
+    The long edge is the larger dimension (width for landscape, height for portrait).
+    """
+    
+    # Define aspect ratios as tuples of (width_ratio, height_ratio, display_name)
+    ASPECT_RATIOS = [
+        (21, 9, "21:9 (Ultra-Wide)"),
+        (16, 9, "16:9 (Wide)"),
+        (4, 3, "4:3 (Standard)"),
+        (3, 2, "3:2 (Photo)"),
+        (1, 1, "1:1 (Square)"),
+        (2, 3, "2:3 (Portrait Photo)"),
+        (3, 4, "3:4 (Portrait Standard)"),
+        (9, 16, "9:16 (Portrait Wide)"),
+        (9, 21, "9:21 (Portrait Ultra-Wide)"),
+    ]
+    
+    @classmethod
+    def INPUT_TYPES(cls):
+        # Create display names for the dropdown
+        aspect_ratio_options = [ratio[2] for ratio in cls.ASPECT_RATIOS]
+        
+        return {
+            "required": {
+                "aspect_ratio": (aspect_ratio_options, {"default": "16:9 (Wide)"}),
+                "long_edge": ("INT", {
+                    "default": 1920,
+                    "min": 64,
+                    "max": 8192,
+                    "step": 1,
+                    "display": "number"
+                }),
+            }
+        }
+    
+    RETURN_TYPES = ("INT", "INT")
+    RETURN_NAMES = ("width", "height")
+    FUNCTION = "calculate_resolution"
+    CATEGORY = "Warper Tools/Resolution"
+    
+    def calculate_resolution(self, aspect_ratio, long_edge):
+        # Find the matching aspect ratio tuple
+        ratio_tuple = None
+        for ratio in self.ASPECT_RATIOS:
+            if ratio[2] == aspect_ratio:
+                ratio_tuple = ratio
+                break
+        
+        if not ratio_tuple:
+            raise ValueError(f"Unknown aspect ratio: {aspect_ratio}")
+        
+        width_ratio, height_ratio, _ = ratio_tuple
+        
+        # Calculate dimensions based on which edge is longer
+        if width_ratio >= height_ratio:
+            # Landscape or square - width is the long edge (or equal)
+            width = long_edge
+            height = round(long_edge * height_ratio / width_ratio)
+        else:
+            # Portrait - height is the long edge
+            height = long_edge
+            width = round(long_edge * width_ratio / height_ratio)
+        
+        # Ensure dimensions are even numbers (often required for video encoding)
+        width = width if width % 2 == 0 else width + 1
+        height = height if height % 2 == 0 else height + 1
+        
+        return (width, height)
+
+
 # Node class mappings for ComfyUI
 NODE_CLASS_MAPPINGS = {
     "PreprocessForTarget_Warper": PreprocessForTarget,
     "CropAndRestore_Warper": CropAndRestore,
+    "AspectRatioResolution_Warper": AspectRatioResolution,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
     "PreprocessForTarget_Warper": "Preprocess for Target (Warper)",
     "CropAndRestore_Warper": "Crop and Restore (Warper)",
+    "AspectRatioResolution_Warper": "Aspect Ratio Resolution (Warper)",
 }
