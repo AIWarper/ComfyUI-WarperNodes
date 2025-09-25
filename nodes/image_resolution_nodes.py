@@ -4,6 +4,7 @@ import torch
 import numpy as np
 from PIL import Image
 import re
+from fractions import Fraction
 
 # Target resolutions for Kontext model
 PREFERED_KONTEXT_RESOLUTIONS = [
@@ -250,6 +251,111 @@ class CropAndRestore:
         return (restored_tensor,)
 
 
+class AspectRatioMatchToBase:
+    """Detect image aspect ratio and align it to a user-defined base height."""
+
+    # (width_component, height_component, label)
+    ASPECT_RATIOS = [
+        (21, 9, "21:9"),
+        (16, 9, "16:9"),
+        (4, 3, "4:3"),
+        (3, 2, "3:2"),
+        (1, 1, "1:1"),
+        (2, 3, "2:3"),
+        (3, 4, "3:4"),
+        (9, 16, "9:16"),
+        (9, 21, "9:21"),
+    ]
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "image": ("IMAGE",),
+                "base_height": ("INT", {
+                    "default": 720,
+                    "min": 1,
+                    "max": 8192,
+                    "step": 1,
+                    "display": "number"
+                }),
+                "max_ratio_delta": ("FLOAT", {
+                    "default": 0.05,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "step": 0.001,
+                    "display": "number"
+                }),
+            }
+        }
+
+    RETURN_TYPES = ("STRING", "INT", "INT", "FLOAT", "FLOAT")
+    RETURN_NAMES = (
+        "aspect_ratio",
+        "scaled_width",
+        "scaled_height",
+        "ratio_difference",
+        "original_ratio",
+    )
+    FUNCTION = "match_ratio"
+    CATEGORY = "Warper Tools/Resolution"
+
+    def match_ratio(self, image, base_height, max_ratio_delta):
+        if base_height <= 0:
+            raise ValueError("base_height must be greater than zero")
+
+        # ComfyUI tensors: [batch, height, width, channels]
+        tensor = image[0]
+        # Ensure tensor is on CPU for shape access
+        if tensor.device.type != "cpu":
+            tensor = tensor.cpu()
+
+        height = tensor.shape[0]
+        width = tensor.shape[1]
+
+        if height == 0:
+            raise ValueError("Input image height is zero")
+
+        original_ratio = width / height
+
+        best_ratio = None
+        smallest_delta = float("inf")
+
+        for width_component, height_component, label in self.ASPECT_RATIOS:
+            candidate_ratio = width_component / height_component
+            delta = abs(original_ratio - candidate_ratio)
+
+            if delta < smallest_delta:
+                smallest_delta = delta
+                best_ratio = (width_component, height_component, label, candidate_ratio)
+
+        if best_ratio and smallest_delta <= max_ratio_delta:
+            width_component, height_component, label, matched_ratio = best_ratio
+            scaled_width = int(round(base_height * (width_component / height_component)))
+            scaled_height = int(base_height)
+            ratio_label = label
+            ratio_difference = smallest_delta
+        else:
+            # Fallback: keep custom ratio
+            fraction_ratio = Fraction(width, height).limit_denominator(100)
+            matched_ratio = original_ratio
+            scaled_width = int(round(base_height * matched_ratio))
+            scaled_height = int(base_height)
+            ratio_label = f"Custom ({fraction_ratio.numerator}:{fraction_ratio.denominator})"
+            ratio_difference = 0.0
+
+        scaled_width = max(1, scaled_width)
+        scaled_height = max(1, scaled_height)
+
+        return (
+            ratio_label,
+            scaled_width,
+            scaled_height,
+            float(ratio_difference),
+            float(original_ratio),
+        )
+
+
 class AspectRatioResolution:
     """
     Calculates width and height based on a selected aspect ratio and desired long edge resolution.
@@ -326,11 +432,13 @@ class AspectRatioResolution:
 NODE_CLASS_MAPPINGS = {
     "PreprocessForTarget_Warper": PreprocessForTarget,
     "CropAndRestore_Warper": CropAndRestore,
+    "AspectRatioMatchToBase_Warper": AspectRatioMatchToBase,
     "AspectRatioResolution_Warper": AspectRatioResolution,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
     "PreprocessForTarget_Warper": "Preprocess for Target (Warper)",
     "CropAndRestore_Warper": "Crop and Restore (Warper)",
+    "AspectRatioMatchToBase_Warper": "Aspect Ratio Match to Base (Warper)",
     "AspectRatioResolution_Warper": "Aspect Ratio Resolution (Warper)",
 }

@@ -6,7 +6,12 @@ from .nodes.wan_video_batching_nodes import (
     GetBatchByIndex,
     SmartOverlappingBatcher,
 )
-from .nodes.image_resolution_nodes import (PreprocessForTarget, CropAndRestore, AspectRatioResolution)
+from .nodes.image_resolution_nodes import (
+    PreprocessForTarget,
+    CropAndRestore,
+    AspectRatioMatchToBase,
+    AspectRatioResolution,
+)
 
 NODE_CLASS_MAPPINGS = {
     # DWPose Nodes
@@ -26,6 +31,7 @@ NODE_CLASS_MAPPINGS = {
     # Image Resolution Nodes
     "PreprocessForTarget_Warper": PreprocessForTarget,
     "CropAndRestore_Warper": CropAndRestore,
+    "AspectRatioMatchToBase_Warper": AspectRatioMatchToBase,
     "AspectRatioResolution_Warper": AspectRatioResolution,
 }
 
@@ -47,6 +53,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     # Image Resolution Nodes
     "PreprocessForTarget_Warper": "Preprocess for Target (Warper)",
     "CropAndRestore_Warper": "Crop and Restore (Warper)",
+    "AspectRatioMatchToBase_Warper": "Aspect Ratio Match to Base (Warper)",
     "AspectRatioResolution_Warper": "Aspect Ratio Resolution (Warper)",
 }
 
