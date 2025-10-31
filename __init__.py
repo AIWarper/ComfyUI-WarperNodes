@@ -10,6 +10,7 @@ from .nodes.image_resolution_nodes import (
     PreprocessForTarget,
     CropAndRestore,
     AspectRatioMatchToBase,
+    AspectRatioMatchToStandardResolution,
     AspectRatioResolution,
 )
 
@@ -32,6 +33,7 @@ NODE_CLASS_MAPPINGS = {
     "PreprocessForTarget_Warper": PreprocessForTarget,
     "CropAndRestore_Warper": CropAndRestore,
     "AspectRatioMatchToBase_Warper": AspectRatioMatchToBase,
+    "AspectRatioMatchToStandardResolution_Warper": AspectRatioMatchToStandardResolution,
     "AspectRatioResolution_Warper": AspectRatioResolution,
 }
 
@@ -54,6 +56,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "PreprocessForTarget_Warper": "Preprocess for Target (Warper)",
     "CropAndRestore_Warper": "Crop and Restore (Warper)",
     "AspectRatioMatchToBase_Warper": "Aspect Ratio Match to Base (Warper)",
+    "AspectRatioMatchToStandardResolution_Warper": "Aspect Ratio Match to Standard Resolution (Warper)",
     "AspectRatioResolution_Warper": "Aspect Ratio Resolution (Warper)",
 }
 
