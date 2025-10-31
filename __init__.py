@@ -13,6 +13,11 @@ from .nodes.image_resolution_nodes import (
     AspectRatioMatchToStandardResolution,
     AspectRatioResolution,
 )
+from .nodes.prompt_loader_nodes import (
+    LoadPromptsFromDirectory,
+    LoadSinglePromptByIndex,
+    CombinePrompts,
+)
 
 NODE_CLASS_MAPPINGS = {
     # DWPose Nodes
@@ -35,6 +40,10 @@ NODE_CLASS_MAPPINGS = {
     "AspectRatioMatchToBase_Warper": AspectRatioMatchToBase,
     "AspectRatioMatchToStandardResolution_Warper": AspectRatioMatchToStandardResolution,
     "AspectRatioResolution_Warper": AspectRatioResolution,
+    # Prompt Loader Nodes
+    "LoadPromptsFromDirectory_Warper": LoadPromptsFromDirectory,
+    "LoadSinglePromptByIndex_Warper": LoadSinglePromptByIndex,
+    "CombinePrompts_Warper": CombinePrompts,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -58,6 +67,10 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "AspectRatioMatchToBase_Warper": "Aspect Ratio Match to Base (Warper)",
     "AspectRatioMatchToStandardResolution_Warper": "Aspect Ratio Match to Standard Resolution (Warper)",
     "AspectRatioResolution_Warper": "Aspect Ratio Resolution (Warper)",
+    # Prompt Loader Nodes
+    "LoadPromptsFromDirectory_Warper": "Load Prompts from Directory (Warper)",
+    "LoadSinglePromptByIndex_Warper": "Load Single Prompt by Index (Warper)",
+    "CombinePrompts_Warper": "Combine Prompts (Warper)",
 }
 
 __all__ = ['NODE_CLASS_MAPPINGS', 'NODE_DISPLAY_NAME_MAPPINGS']

@@ -1,0 +1,159 @@
+{
+  "last_node_id": 10,
+  "last_link_id": 5,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "LoadPromptsFromDirectory_Warper",
+      "pos": [100, 100],
+      "size": [350, 130],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "prompts",
+          "type": "STRING",
+          "links": [1],
+          "shape": 6
+        },
+        {
+          "name": "total_loaded",
+          "type": "INT",
+          "links": [],
+          "shape": 3
+        },
+        {
+          "name": "file_names",
+          "type": "STRING",
+          "links": [],
+          "shape": 6
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoadPromptsFromDirectory_Warper"
+      },
+      "widgets_values": [
+        "path/to/your/prompts/directory",
+        0,
+        10
+      ]
+    },
+    {
+      "id": 2,
+      "type": "LoadSinglePromptByIndex_Warper",
+      "pos": [100, 300],
+      "size": [350, 110],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "links": [2],
+          "shape": 3
+        },
+        {
+          "name": "file_name",
+          "type": "STRING",
+          "links": [],
+          "shape": 3
+        },
+        {
+          "name": "total_files",
+          "type": "INT",
+          "links": [],
+          "shape": 3
+        },
+        {
+          "name": "is_valid",
+          "type": "BOOLEAN",
+          "links": [],
+          "shape": 3
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoadSinglePromptByIndex_Warper"
+      },
+      "widgets_values": [
+        "path/to/your/prompts/directory",
+        0
+      ]
+    },
+    {
+      "id": 3,
+      "type": "CombinePrompts_Warper",
+      "pos": [500, 200],
+      "size": [350, 180],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "prompt1",
+          "type": "STRING",
+          "link": 2
+        },
+        {
+          "name": "prompt2",
+          "type": "STRING",
+          "link": null
+        },
+        {
+          "name": "prompt3",
+          "type": "STRING",
+          "link": null
+        },
+        {
+          "name": "prompt4",
+          "type": "STRING",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "combined_prompt",
+          "type": "STRING",
+          "links": [],
+          "shape": 3
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "CombinePrompts_Warper"
+      },
+      "widgets_values": [
+        ", ",
+        "A photo of ",
+        ""
+      ]
+    },
+    {
+      "id": 4,
+      "type": "Note",
+      "pos": [100, 500],
+      "size": [750, 250],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "properties": {
+        "text": "Prompt Loader Example Workflow\n\nThis workflow demonstrates the new prompt loading nodes:\n\n1. LoadPromptsFromDirectory: Loads multiple prompts from .txt files in a directory\n   - skip_first_files: Skip N files (useful with incremental integer nodes)\n   - load_cap: Maximum number of prompts to load\n\n2. LoadSinglePromptByIndex: Load a single prompt by its index\n   - file_index: The specific file to load (0-based)\n\n3. CombinePrompts: Combine multiple prompts with custom separators\n   - Can add prefix/suffix to the combined result\n\nUsage Tips:\n- Connect an incremental integer node to skip_first_files or file_index for sequential access\n- The nodes sort files alphabetically for consistent ordering\n- All nodes handle UTF-8 encoded text files"
+      },
+      "widgets_values": [
+        "Prompt Loader Example Workflow\n\nThis workflow demonstrates the new prompt loading nodes:\n\n1. LoadPromptsFromDirectory: Loads multiple prompts from .txt files in a directory\n   - skip_first_files: Skip N files (useful with incremental integer nodes)\n   - load_cap: Maximum number of prompts to load\n\n2. LoadSinglePromptByIndex: Load a single prompt by its index\n   - file_index: The specific file to load (0-based)\n\n3. CombinePrompts: Combine multiple prompts with custom separators\n   - Can add prefix/suffix to the combined result\n\nUsage Tips:\n- Connect an incremental integer node to skip_first_files or file_index for sequential access\n- The nodes sort files alphabetically for consistent ordering\n- All nodes handle UTF-8 encoded text files"
+      ],
+      "color": "#432",
+      "bgcolor": "#653"
+    }
+  ],
+  "links": [
+    [1, 1, 0, 3, 0, "STRING"],
+    [2, 2, 0, 3, 0, "STRING"]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {},
+  "version": 0.4
+}

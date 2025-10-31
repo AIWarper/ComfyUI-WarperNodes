@@ -20,6 +20,40 @@ A collection of general-purpose nodes for ComfyUI.
 
 *   **Facial Part Mask from Pose (Warper):** Creates masks for various facial parts (entire face, mouth, eyes) using different shapes (convex hull, ellipse, etc.) based on facial keypoints. (Category: `Warper Tools/DWMasking`)
 
+### Prompt Loading Nodes (Category: `Warper Tools/Prompts`)
+
+*   **Load Prompts from Directory (Warper):** Loads text prompts from `.txt` files in a specified directory with options for batch processing.
+    *   **Inputs:**
+        *   `directory_path`: Path to directory containing `.txt` files
+        *   `skip_first_files`: Number of files to skip from the beginning (useful with incremental integer nodes for sequential access)
+        *   `load_cap`: Maximum number of prompts to load at once
+    *   **Outputs:**
+        *   `prompts`: List of loaded prompt texts
+        *   `total_loaded`: Number of prompts successfully loaded
+        *   `file_names`: List of filenames that were loaded
+    *   **Use Case:** Perfect for batch processing multiple prompts or iterating through a prompt library with an incremental counter node.
+
+*   **Load Single Prompt by Index (Warper):** Loads a single prompt from a directory by its index position.
+    *   **Inputs:**
+        *   `directory_path`: Path to directory containing `.txt` files
+        *   `file_index`: Index of the file to load (0-based)
+    *   **Outputs:**
+        *   `prompt`: The loaded prompt text
+        *   `file_name`: Name of the loaded file
+        *   `total_files`: Total number of `.txt` files in the directory
+        *   `is_valid`: Boolean indicating if the load was successful
+    *   **Use Case:** Ideal for workflows that need to process prompts one at a time with precise index control.
+
+*   **Combine Prompts (Warper):** Combines multiple prompts with customizable separators and formatting.
+    *   **Inputs:**
+        *   `prompt1-4`: Up to 4 prompt inputs (all optional)
+        *   `separator`: Text to insert between prompts (default: ", ")
+        *   `prefix`: Text to add before the combined result
+        *   `suffix`: Text to add after the combined result
+    *   **Outputs:**
+        *   `combined_prompt`: The final combined prompt string
+    *   **Use Case:** Useful for building complex prompts from multiple sources or adding consistent formatting.
+
 ## Installation
 
 1.  Navigate to your ComfyUI `custom_nodes` directory.
