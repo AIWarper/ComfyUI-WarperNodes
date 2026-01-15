@@ -54,6 +54,29 @@ A collection of general-purpose nodes for ComfyUI.
         *   `combined_prompt`: The final combined prompt string
     *   **Use Case:** Useful for building complex prompts from multiple sources or adding consistent formatting.
 
+### Text File Iterator Nodes (Category: `Warper Tools/Text`)
+
+*   **Text File Iterator (Warper):** Loads text files from a directory with different iteration modes.
+    *   **Inputs:**
+        *   `directory_path`: Path to directory containing `.txt` files
+        *   `index`: Index number (behavior depends on mode)
+        *   `mode`: Iteration mode selection
+            *   `fixed`: Always loads the file at the specified index
+            *   `incremental`: Cycles through files sequentially, remembering position between runs
+            *   `randomized`: Randomly selects a file using the index as a seed for reproducible results
+    *   **Outputs:**
+        *   `text_content`: The content of the loaded text file
+    *   **Use Case:** Perfect for iterating through prompt files with different access patterns - fixed for specific prompts, incremental for sequential workflows, or randomized for variety.
+
+*   **Text File Iterator with Info (Warper):** Enhanced version that provides additional file information.
+    *   **Inputs:** Same as Text File Iterator
+    *   **Outputs:**
+        *   `text_content`: The content of the loaded text file
+        *   `file_name`: Name of the loaded file
+        *   `file_index`: Index of the loaded file in the directory
+        *   `total_files`: Total number of `.txt` files in the directory
+    *   **Use Case:** Ideal when you need to track which file is being used or display progress information.
+
 ## Installation
 
 1.  Navigate to your ComfyUI `custom_nodes` directory.

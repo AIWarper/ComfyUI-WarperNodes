@@ -18,6 +18,10 @@ from .nodes.prompt_loader_nodes import (
     LoadSinglePromptByIndex,
     CombinePrompts,
 )
+from .nodes.text_file_iterator_nodes import (
+    TextFileIterator,
+    TextFileIteratorWithInfo,
+)
 
 NODE_CLASS_MAPPINGS = {
     # DWPose Nodes
@@ -44,6 +48,9 @@ NODE_CLASS_MAPPINGS = {
     "LoadPromptsFromDirectory_Warper": LoadPromptsFromDirectory,
     "LoadSinglePromptByIndex_Warper": LoadSinglePromptByIndex,
     "CombinePrompts_Warper": CombinePrompts,
+    # Text File Iterator Nodes
+    "TextFileIterator_Warper": TextFileIterator,
+    "TextFileIteratorWithInfo_Warper": TextFileIteratorWithInfo,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -71,6 +78,9 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "LoadPromptsFromDirectory_Warper": "Load Prompts from Directory (Warper)",
     "LoadSinglePromptByIndex_Warper": "Load Single Prompt by Index (Warper)",
     "CombinePrompts_Warper": "Combine Prompts (Warper)",
+    # Text File Iterator Nodes
+    "TextFileIterator_Warper": "Text File Iterator (Warper)",
+    "TextFileIteratorWithInfo_Warper": "Text File Iterator with Info (Warper)",
 }
 
 __all__ = ['NODE_CLASS_MAPPINGS', 'NODE_DISPLAY_NAME_MAPPINGS']

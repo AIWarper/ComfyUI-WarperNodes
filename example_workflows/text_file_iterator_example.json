@@ -1,0 +1,140 @@
+{
+  "last_node_id": 5,
+  "last_link_id": 3,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "TextFileIterator_Warper",
+      "pos": [400, 200],
+      "size": {
+        "0": 315,
+        "1": 106
+      },
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "outputs": [
+        {
+          "name": "text_content",
+          "type": "STRING",
+          "links": [1],
+          "shape": 3,
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "TextFileIterator_Warper"
+      },
+      "widgets_values": [
+        "./prompts",
+        0,
+        "fixed"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "ShowText|pysssss",
+      "pos": [750, 200],
+      "size": [315, 58],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "link": 1
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ShowText|pysssss"
+      }
+    },
+    {
+      "id": 3,
+      "type": "TextFileIteratorWithInfo_Warper",
+      "pos": [400, 400],
+      "size": {
+        "0": 315,
+        "1": 106
+      },
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "outputs": [
+        {
+          "name": "text_content",
+          "type": "STRING",
+          "links": [2],
+          "shape": 3,
+          "slot_index": 0
+        },
+        {
+          "name": "file_name",
+          "type": "STRING",
+          "links": null,
+          "shape": 3
+        },
+        {
+          "name": "file_index",
+          "type": "INT",
+          "links": null,
+          "shape": 3
+        },
+        {
+          "name": "total_files",
+          "type": "INT",
+          "links": null,
+          "shape": 3
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "TextFileIteratorWithInfo_Warper"
+      },
+      "widgets_values": [
+        "./prompts",
+        0,
+        "incremental"
+      ]
+    },
+    {
+      "id": 4,
+      "type": "ShowText|pysssss",
+      "pos": [750, 400],
+      "size": [315, 58],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "link": 2
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ShowText|pysssss"
+      }
+    },
+    {
+      "id": 5,
+      "type": "Note",
+      "pos": [50, 50],
+      "size": [300, 150],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "properties": {
+        "text": "Text File Iterator Example\n\nThis workflow demonstrates:\n1. Fixed mode - always loads the same file based on index\n2. Incremental mode - cycles through files sequentially\n3. Randomized mode - selects files randomly using index as seed\n\nPlace your .txt prompt files in the specified directory."
+      }
+    }
+  ],
+  "links": [
+    [1, 1, 0, 2, 0, "STRING"],
+    [2, 3, 0, 4, 0, "STRING"]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {},
+  "version": 0.4
+}
