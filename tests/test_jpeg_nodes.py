@@ -28,6 +28,7 @@ class JPEGNodesTests(unittest.TestCase):
         paths.get_output_directory = lambda: str(self.output)
         paths.get_temp_directory = lambda: str(self.temp)
         paths.get_save_image_path = self.save_path
+        self.paths = paths
         spec = importlib.util.spec_from_file_location("warper_jpeg_test", MODULE_PATH)
         self.nodes = importlib.util.module_from_spec(spec)
         with patch.dict(sys.modules, {"folder_paths": paths}):
@@ -106,6 +107,26 @@ class JPEGNodesTests(unittest.TestCase):
             self.assertTrue(callable(getattr(node_class(), node_class.FUNCTION)))
             self.assertEqual(node_class.INPUT_TYPES()["required"]["quality"][1]["default"], 95)
         self.assertNotIn("filename_prefix", self.nodes.PreviewJPEG.INPUT_TYPES()["required"])
+
+    def test_package_import_registers_only_jpeg_nodes(self):
+        package_root = MODULE_PATH.parents[1]
+        spec = importlib.util.spec_from_file_location(
+            "warper_package_test", package_root / "__init__.py",
+            submodule_search_locations=[str(package_root)],
+        )
+        package = importlib.util.module_from_spec(spec)
+        with patch.dict(sys.modules, {
+            "folder_paths": self.paths, "warper_package_test": package,
+        }):
+            spec.loader.exec_module(package)
+            expected = {"SaveJPEG_Warper", "PreviewJPEG_Warper"}
+            self.assertEqual(set(package.NODE_CLASS_MAPPINGS), expected)
+            self.assertEqual(set(package.NODE_DISPLAY_NAME_MAPPINGS), expected)
+            # Every registered node can be constructed without legacy dependencies.
+            for node_class in package.NODE_CLASS_MAPPINGS.values():
+                node = node_class()
+                result = node.save_images(torch.zeros((1, 8, 8, 3)))
+                self.assertTrue(self.image_path(result["ui"]["images"][0]).is_file())
 
 
 if __name__ == "__main__":

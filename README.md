@@ -1,120 +1,42 @@
 # ComfyUI Warper Nodes
 
-A collection of general-purpose nodes for ComfyUI.
+Lightweight JPEG saving and previews for ComfyUI. This package contains exactly two nodes, both under **Warper Tools/Image**.
 
-## Current Nodes
+## Nodes
 
-### JPEG Nodes (Category: `Warper Tools/Image`)
+| Node | Behavior |
+| --- | --- |
+| **Save JPEG (Warper)** | Saves every image in a batch directly as `.jpg` in ComfyUI's output directory and displays the saved images in the node. |
+| **Preview JPEG (Warper)** | Displays every image in a batch using `.jpg` files in ComfyUI's temporary directory. Does not save to the output directory. |
 
-*   **Save JPEG (Warper):** Saves every image in an `IMAGE` batch directly as `.jpg` in ComfyUI's output directory and displays the saved images in the node. Supports a `filename_prefix`, including subfolders and `%batch_num%`.
-*   **Preview JPEG (Warper):** Displays every image in the node using `.jpg` files in ComfyUI's temporary directory. Does not save images to the output directory. Temporary files may be removed by ComfyUI.
+Connect the `IMAGE` output of **VAE Decode** (or any image-producing node) to either node. No intermediate PNG is created.
 
-Connect the `IMAGE` output of **VAE Decode** (or any other image node) to either node. Both have a `quality` setting from 1 to 100 (default: 95). JPEG encoding uses full chroma resolution (4:4:4). No intermediate PNG is created, and no additional dependencies are needed beyond ComfyUI's existing NumPy and Pillow.
+Both nodes have a `quality` setting from **1 to 100**, default **95**, and preserve the original resolution. JPEG encoding uses full chroma resolution (4:4:4). Save JPEG also accepts a `filename_prefix`, including subfolders and `%batch_num%`.
 
-JPEG is lossy; file size depends on image content and quality. Resolution is preserved, but RGBA inputs lose their alpha channel. These nodes do not embed prompt/workflow metadata; save your workflow separately as JSON. JPEG encoding reduces file sizes, not VAE decoding memory use. Remove or bypass any existing PNG Save/Preview nodes if you no longer want their PNG files.
-
-*   **DWPose Scaler (Warper):** Provides advanced scaling and adjustment options for DWPose keypoints. (Category: `Warper Tools`)
-    ![DWPose Scaler Example Image](assets/images/DWScaler.jpg)
-
-*   **Flow Visualizer (Warper):** Calculates optical flow between image sequences using the RAFT model and provides visual representations (color-coded flow images) for both forward and backward flow. Ideal for understanding motion in your generations. (Category: `Warper Tools/Flow`)
-    *   **Model Requirement:** This node requires a RAFT model checkpoint.
-
-*   **Smart Video Batcher (Warper):** Splits image sequences into smaller batches with special padding for the final batch. (Category: `Warper Tools/Looping`)
-
-*   **Get Batch By Index (Warper):** Selects a single image batch from a list of batches by its index. (Category: `Warper Tools/Looping`)
-
-*   **Smart Overlapping Batcher (Warper):** Creates overlapping batches from an image sequence to help maintain temporal consistency. (Category: `Warper Tools/Looping`)
-
-*   **Mouth Mask from Pose (Warper):** Generates a circular mask around the mouth area based on facial keypoints. (Category: `Warper Tools/DWMasking`)
-
-*   **Facial Part Mask from Pose (Warper):** Creates masks for various facial parts (entire face, mouth, eyes) using different shapes (convex hull, ellipse, etc.) based on facial keypoints. (Category: `Warper Tools/DWMasking`)
-
-### Prompt Loading Nodes (Category: `Warper Tools/Prompts`)
-
-*   **Load Prompts from Directory (Warper):** Loads text prompts from `.txt` files in a specified directory with options for batch processing.
-    *   **Inputs:**
-        *   `directory_path`: Path to directory containing `.txt` files
-        *   `skip_first_files`: Number of files to skip from the beginning (useful with incremental integer nodes for sequential access)
-        *   `load_cap`: Maximum number of prompts to load at once
-    *   **Outputs:**
-        *   `prompts`: List of loaded prompt texts
-        *   `total_loaded`: Number of prompts successfully loaded
-        *   `file_names`: List of filenames that were loaded
-    *   **Use Case:** Perfect for batch processing multiple prompts or iterating through a prompt library with an incremental counter node.
-
-*   **Load Single Prompt by Index (Warper):** Loads a single prompt from a directory by its index position.
-    *   **Inputs:**
-        *   `directory_path`: Path to directory containing `.txt` files
-        *   `file_index`: Index of the file to load (0-based)
-    *   **Outputs:**
-        *   `prompt`: The loaded prompt text
-        *   `file_name`: Name of the loaded file
-        *   `total_files`: Total number of `.txt` files in the directory
-        *   `is_valid`: Boolean indicating if the load was successful
-    *   **Use Case:** Ideal for workflows that need to process prompts one at a time with precise index control.
-
-*   **Combine Prompts (Warper):** Combines multiple prompts with customizable separators and formatting.
-    *   **Inputs:**
-        *   `prompt1-4`: Up to 4 prompt inputs (all optional)
-        *   `separator`: Text to insert between prompts (default: ", ")
-        *   `prefix`: Text to add before the combined result
-        *   `suffix`: Text to add after the combined result
-    *   **Outputs:**
-        *   `combined_prompt`: The final combined prompt string
-    *   **Use Case:** Useful for building complex prompts from multiple sources or adding consistent formatting.
-
-### Text File Iterator Nodes (Category: `Warper Tools/Text`)
-
-*   **Text File Iterator (Warper):** Loads text files from a directory with different iteration modes.
-    *   **Inputs:**
-        *   `directory_path`: Path to directory containing `.txt` files
-        *   `index`: Index number (behavior depends on mode)
-        *   `mode`: Iteration mode selection
-            *   `fixed`: Always loads the file at the specified index
-            *   `incremental`: Cycles through files sequentially, remembering position between runs
-            *   `randomized`: Randomly selects a file using the index as a seed for reproducible results
-    *   **Outputs:**
-        *   `text_content`: The content of the loaded text file
-    *   **Use Case:** Perfect for iterating through prompt files with different access patterns - fixed for specific prompts, incremental for sequential workflows, or randomized for variety.
-
-*   **Text File Iterator with Info (Warper):** Enhanced version that provides additional file information.
-    *   **Inputs:** Same as Text File Iterator
-    *   **Outputs:**
-        *   `text_content`: The content of the loaded text file
-        *   `file_name`: Name of the loaded file
-        *   `file_index`: Index of the loaded file in the directory
-        *   `total_files`: Total number of `.txt` files in the directory
-    *   **Use Case:** Ideal when you need to track which file is being used or display progress information.
+JPEG is lossy; file size depends on image content and quality. RGBA inputs lose their alpha channel. These nodes do not embed prompt/workflow metadata; save your workflow separately as JSON. Temporary previews may be removed by ComfyUI. JPEG encoding reduces file sizes, not VAE decoding memory use. Remove or bypass any existing PNG Save/Preview nodes if you no longer want their PNG files.
 
 ## Installation
 
-1.  Navigate to your ComfyUI `custom_nodes` directory.
-2.  Clone this repository:
-    ```bash
-    git clone https://github.com/AIWarper/ComfyUI-WarperNodes
-    ```
-3.  **Install RAFT Model (Required for Flow Visualizer Node):**
-    *   Download the RAFT model checkpoint: `Tartan-C-T-TSKH-spring540x960-M.pth`
-        *   **Download Link:** [Google Drive Folder](https://drive.google.com/drive/folders/1YLovlvUW94vciWvTyLf-p3uWscbOQRWW) (Look for the specified `.pth` file within this folder.)
-    *   Create a `raft` folder inside your ComfyUI `models` directory if it doesn't already exist: `ComfyUI/models/raft/`
-    *   Place the downloaded `Tartan-C-T-TSKH-spring540x960-M.pth` file into this `ComfyUI/models/raft/` directory.
+From your ComfyUI `custom_nodes` directory:
 
-4.  Install any Python package dependencies (if listed in `requirements.txt`):
-    ```bash
-    cd ComfyUI-WarperNodes
-    pip install -r requirements.txt
-    ```
-    (If you use ComfyUI's portable version, you might need to use its embedded Python, e.g., `path/to/ComfyUI/python_embeded/python.exe -m pip install -r requirements.txt`. If a `requirements.txt` file is not present, this step may not be needed.)
+```bash
+git clone https://github.com/AIWarper/ComfyUI-WarperNodes.git
+```
 
-5.  Restart ComfyUI.
+Restart ComfyUI, then search for **Save JPEG (Warper)** or **Preview JPEG (Warper)**. No extra models, node packs, or dependencies are needed beyond ComfyUI's existing NumPy and Pillow.
 
-## Usage Notes
+To update an existing Git installation, run `git pull` inside `custom_nodes/ComfyUI-WarperNodes` and restart ComfyUI.
 
-*   Ensure the RAFT model is correctly placed as described above for the **Flow Visualizer (Warper)** node to function.
-*   The nodes will appear under the "Warper Tools" category in the ComfyUI "Add Node" menu.
+## Legacy nodes retired
 
----
+This is a breaking update: all former pose, mask, optical-flow, batching, resolution/preprocessing, prompt-loading, and text-file iterator nodes have been retired and removed, along with their examples and bundled RAFT/UniMatch code. Only the two JPEG nodes above are registered.
 
-**TODO:**
-*   Add example images/gifs for other nodes.
-*   More detailed usage instructions for each node.
+Existing workflows using retired nodes will report missing nodes after updating. If you still need those workflows, keep a separate ComfyUI installation on legacy commit `35e83bb` rather than updating it. The legacy implementation remains available in Git history.
+
+## Development
+
+Run the CPU tests with ComfyUI's Python environment (or Python with NumPy, Pillow, and Torch installed):
+
+```bash
+python -m unittest discover -s tests -v
+```
