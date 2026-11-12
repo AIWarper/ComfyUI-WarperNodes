@@ -22,8 +22,11 @@ from .nodes.text_file_iterator_nodes import (
     TextFileIterator,
     TextFileIteratorWithInfo,
 )
+from .nodes.jpeg_nodes import SaveJPEG, PreviewJPEG
 
 NODE_CLASS_MAPPINGS = {
+    "SaveJPEG_Warper": SaveJPEG,
+    "PreviewJPEG_Warper": PreviewJPEG,
     # DWPose Nodes
     "DWPoseScalerNode_Warper": DWPoseScalerNode_Warper,
     "MouthMaskFromPose_Warper": MouthMaskFromPose_Warper,
@@ -54,6 +57,8 @@ NODE_CLASS_MAPPINGS = {
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
+    "SaveJPEG_Warper": "Save JPEG (Warper)",
+    "PreviewJPEG_Warper": "Preview JPEG (Warper)",
     # DWPose Nodes
     "DWPoseScalerNode_Warper": "DWPose Scaler (Warper)",
     "MouthMaskFromPose_Warper": "Mouth Mask from Pose (Warper)",

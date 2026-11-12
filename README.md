@@ -4,6 +4,15 @@ A collection of general-purpose nodes for ComfyUI.
 
 ## Current Nodes
 
+### JPEG Nodes (Category: `Warper Tools/Image`)
+
+*   **Save JPEG (Warper):** Saves every image in an `IMAGE` batch directly as `.jpg` in ComfyUI's output directory and displays the saved images in the node. Supports a `filename_prefix`, including subfolders and `%batch_num%`.
+*   **Preview JPEG (Warper):** Displays every image in the node using `.jpg` files in ComfyUI's temporary directory. Does not save images to the output directory. Temporary files may be removed by ComfyUI.
+
+Connect the `IMAGE` output of **VAE Decode** (or any other image node) to either node. Both have a `quality` setting from 1 to 100 (default: 95). JPEG encoding uses full chroma resolution (4:4:4). No intermediate PNG is created, and no additional dependencies are needed beyond ComfyUI's existing NumPy and Pillow.
+
+JPEG is lossy; file size depends on image content and quality. Resolution is preserved, but RGBA inputs lose their alpha channel. These nodes do not embed prompt/workflow metadata; save your workflow separately as JSON. JPEG encoding reduces file sizes, not VAE decoding memory use. Remove or bypass any existing PNG Save/Preview nodes if you no longer want their PNG files.
+
 *   **DWPose Scaler (Warper):** Provides advanced scaling and adjustment options for DWPose keypoints. (Category: `Warper Tools`)
     ![DWPose Scaler Example Image](assets/images/DWScaler.jpg)
 
